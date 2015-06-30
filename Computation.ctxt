@@ -1,0 +1,22 @@
+#BlueJ class context
+comment0.params=game\ depth\ alpha\ beta
+comment0.target=int\ minimax(GameState,\ int,\ int,\ int)
+comment1.params=
+comment1.target=void\ refresh()
+comment2.params=game
+comment2.target=int\ isTerminal(GameState)
+comment3.params=game
+comment3.target=int\ canWin(GameState)
+comment4.params=game
+comment4.target=int\ instantThreat(GameState)
+comment5.params=game
+comment5.target=int\ winCheck(GameState)
+comment6.params=game
+comment6.target=int\ returnVal(GameState)
+comment7.params=game\ init\ diagSize
+comment7.target=int[]\ returnDiag1(GameState,\ int,\ int)
+comment8.params=game\ init\ diagSize
+comment8.target=int[]\ returnDiag2(GameState,\ int,\ int)
+comment9.params=game
+comment9.target=boolean\ boardFilled(GameState)
+numComments=10
