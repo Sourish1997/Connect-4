@@ -17,6 +17,7 @@ public class Main extends JPanel implements ActionListener, KeyListener {
 
     private static int gameMode = 0;
     private static int playerMode = 0;
+    private static int depth = 6;
 
     public Main() {
         int inits[][] = new int[6][7];
@@ -128,6 +129,22 @@ public class Main extends JPanel implements ActionListener, KeyListener {
                     playerMode = 1;
             }
         });
+        menuItems[6].addActionListener(e -> {
+            Object[] possibilities = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
+            String selection = (String)JOptionPane.showInputDialog(
+                    null,
+                    "Make a Selection",
+                    "Choose Computer Level",
+                    JOptionPane.QUESTION_MESSAGE,
+                    new ImageIcon("./images/select.png"),
+                    possibilities,
+                    "6");
+
+            //If a string was returned, say so.
+            if ((selection != null) && (selection.length() > 0)) {
+                depth = Integer.parseInt(selection);
+            }
+        });
     }
 
     public static void addMainPanel() {
@@ -145,6 +162,9 @@ public class Main extends JPanel implements ActionListener, KeyListener {
         } else {
             menuItems[5].setEnabled(true);
             menuItems[6].setEnabled(true);
+            
+            playerMode = 0;
+            depth = 6;
         }
     }
 
@@ -224,7 +244,7 @@ public class Main extends JPanel implements ActionListener, KeyListener {
                 }
 
                 if(gameMode == 0) {
-                    int[] bestMove = comp.minimax(game, 6, Integer.MIN_VALUE, Integer.MAX_VALUE);
+                    int[] bestMove = comp.minimax(game, depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
                     System.out.println(bestMove[0] + " " + bestMove[1]);
                     game.addDisc(bestMove[1]);
 
