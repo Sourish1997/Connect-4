@@ -138,6 +138,14 @@ public class Main extends JPanel implements ActionListener, KeyListener {
         frame.add(mainPanel);
         frame.validate();
         mainPanel.requestFocusInWindow();
+
+        if(gameMode == 1) {
+            menuItems[5].setEnabled(false);
+            menuItems[6].setEnabled(false);
+        } else {
+            menuItems[5].setEnabled(true);
+            menuItems[6].setEnabled(true);
+        }
     }
 
     public static void addSplashPanel() {
