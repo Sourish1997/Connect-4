@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.border.Border;
 
 public class Main extends JPanel implements ActionListener, KeyListener {
     static GameState game;
@@ -65,13 +66,16 @@ public class Main extends JPanel implements ActionListener, KeyListener {
     public static void init() {
         menuBar = new JMenuBar();
         menus = new JMenu[2];
-        menuItems = new JMenuItem[4];
+        menuItems = new JMenuItem[5];
         menus[0] = new JMenu("        File        ");
         menus[1] = new JMenu("        Help        ");
         menuItems[0] = new JMenuItem("        New Game       ");
         menuItems[1] = new JMenuItem("        How to Play        ");
         menuItems[2] = new JMenuItem("        About       ");
         menuItems[3] = new JMenuItem("        Exit       ");
+        menuItems[4] = new JMenuItem("        Home        ");
+        menus[0].add(menuItems[4]);
+        menus[0].add(new JSeparator());
         menus[0].add(menuItems[0]);
         menus[0].add(new JSeparator());
         menus[0].add(menuItems[3]);
@@ -96,6 +100,7 @@ public class Main extends JPanel implements ActionListener, KeyListener {
                 "\nTo win you must place 4 checkers in an row, horizontally, vertically or diagonally."));
         menuItems[2].addActionListener(e -> JOptionPane.showMessageDialog(null, "© Created by Sourish Banerjee"));
         menuItems[3].addActionListener(e -> System.exit(0));
+        menuItems[4].addActionListener(e -> addSplashPanel());
     }
 
     public static void addMainPanel() {
