@@ -10,6 +10,12 @@ public class Main extends JPanel implements ActionListener, KeyListener {
     private static JMenuBar menuBar;
     private static JMenu menus[];
     private static JMenuItem menuItems[];
+    private static SplashPanel splashPanel;
+    private static Main mainPanel;
+    private static JFrame frame;
+    private static Timer mainTimer;
+
+    private static int gameMode = 0;
 
     public Main() {
         int inits[][] = new int[6][7];
@@ -18,22 +24,26 @@ public class Main extends JPanel implements ActionListener, KeyListener {
                 inits[a][b] = 0;;
             }
         }
-        inits[5][3] = 1;
+
+        if(gameMode == 0)
+            inits[5][3] = 1;
         game = new GameState(inits, false);
         addKeyListener(this);
         setFocusable(true);
         setFocusTraversalKeysEnabled(false);
         timer = new javax.swing.Timer(40, this);
         timer.start();
+
+        setBackground(new Color(255, 233, 150));
     }
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setColor(new Color(20, 20,20));
-        g2.fillRect(60, 35, 680, 590);
-        g2.setColor(UIManager.getColor("Panel.background"));
+        g2.setColor(new Color(0, 0,0));
+        g2.fillRoundRect(60, 35, 680, 590, 50, 50);
+        g2.setColor(new Color(255, 233, 150));
         for (int a = 90, b = 0; b < 7; a += 90, b++) {
             for (int c = 65, d = 0; d < 6; c += 90, d++) {
                 if (game.board[d][b] == 1)
@@ -41,13 +51,14 @@ public class Main extends JPanel implements ActionListener, KeyListener {
                 else if (game.board[d][b] == 2)
                     g2.setColor(new Color(183,73, 73));
                 g2.fillOval(a, c, 80, 80);
-                g2.setColor(UIManager.getColor("Panel.background"));
+                g2.setColor(new Color(255, 233, 150));
             }
         }
         if (game.maxPlayer)
-            g2.setColor(new Color(73, 115, 183, 60));
+            g2.setColor(new Color(73, 115, 183, 150));
         else
-            g2.setColor(new Color(183, 73, 73, 60));
+            g2.setColor(new Color(183, 73, 73, 150));
+
         g2.fillOval(x, y, 80, 80);
     }
 
@@ -87,6 +98,24 @@ public class Main extends JPanel implements ActionListener, KeyListener {
         menuItems[3].addActionListener(e -> System.exit(0));
     }
 
+    public static void addMainPanel() {
+        frame.getContentPane().removeAll();
+        mainPanel = new Main();
+        frame.setJMenuBar(menuBar);
+        menuBar.setVisible(true);
+        frame.add(mainPanel);
+        frame.validate();
+        mainPanel.requestFocusInWindow();
+    }
+
+    public static void addSplashPanel() {
+        frame.getContentPane().removeAll();
+        frame.setJMenuBar(menuBar);
+        menuBar.setVisible(false);
+        frame.add(splashPanel);
+        frame.validate();
+    }
+
     public static void main(String args[]) {
         try {
             for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
@@ -99,14 +128,29 @@ public class Main extends JPanel implements ActionListener, KeyListener {
 
         init();
 
-        JFrame jf = new JFrame("Connect Four");
-        Main obj = new Main();
-        jf.setJMenuBar(menuBar);
-        jf.setSize(800, 700);
-        jf.setResizable(false);
-        jf.setLocationRelativeTo(null);
-        jf.add(obj);
-        jf.setVisible(true);
+        frame = new JFrame("Connect Four");
+        splashPanel = new SplashPanel();
+        frame.setSize(800, 700);
+        frame.setResizable(false);
+        frame.setJMenuBar(menuBar);
+        menuBar.setVisible(false);
+        frame.add(splashPanel);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+
+        mainTimer = new javax.swing.Timer(40, e -> {
+            if(splashPanel.getSelected() == 0) {
+                splashPanel.resetSelected();
+                gameMode = 0;
+                addMainPanel();
+            } else if(splashPanel.getSelected() == 1) {
+                splashPanel.resetSelected();
+                gameMode = 1;
+                addMainPanel();
+            }
+        });
+
+        mainTimer.start();
     }
 
     public void keyPressed(KeyEvent e) {}
@@ -121,7 +165,7 @@ public class Main extends JPanel implements ActionListener, KeyListener {
                 x += 90;
         }
         if (e.getKeyCode() == e.VK_ENTER) {
-            if (game.maxPlayer == false) {
+            if (game.maxPlayer == false || gameMode == 1) {
                 int allowed = game.addDisc((x / 90) - 1);
                 if(allowed == -1)
                     return;
@@ -139,17 +183,28 @@ public class Main extends JPanel implements ActionListener, KeyListener {
                     return;
                 }
 
-                int[] bestMove = comp.minimax(game, 6, Integer.MIN_VALUE, Integer.MAX_VALUE);
-                System.out.println(bestMove[0] + " " + bestMove[1]);
-                game.addDisc(bestMove[1]);
+                if(gameMode == 0) {
+                    int[] bestMove = comp.minimax(game, 6, Integer.MIN_VALUE, Integer.MAX_VALUE);
+                    System.out.println(bestMove[0] + " " + bestMove[1]);
+                    game.addDisc(bestMove[1]);
 
-                if (comp.winCheck(game) == 1) {
-                    JOptionPane.showMessageDialog(null, "Blue Wins!!");
-                    timer.stop();
-                } else if(comp.boardFilled(game)) {
-                    JOptionPane.showMessageDialog(null, "It's a Draw!!");
-                    timer.stop();
-                    return;
+                    if (comp.winCheck(game) == 1) {
+                        JOptionPane.showMessageDialog(null, "Blue Wins!!");
+                        timer.stop();
+                    } else if (comp.boardFilled(game)) {
+                        JOptionPane.showMessageDialog(null, "It's a Draw!!");
+                        timer.stop();
+                        return;
+                    }
+                } else {
+                    if (comp.winCheck(game) == 1) {
+                        JOptionPane.showMessageDialog(null, "Blue Wins!!");
+                        timer.stop();
+                    } else if (comp.boardFilled(game)) {
+                        JOptionPane.showMessageDialog(null, "It's a Draw!!");
+                        timer.stop();
+                        return;
+                    }
                 }
             }
         }
