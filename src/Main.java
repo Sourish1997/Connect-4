@@ -14,10 +14,14 @@ public class Main extends JPanel implements ActionListener, KeyListener {
     private static Main mainPanel;
     private static JFrame frame;
     private static Timer mainTimer;
+    private static JLabel thinkingLabel;
 
     private static int gameMode = 0;
     private static int playerMode = 0;
     private static int depth = 6;
+
+    private static boolean thinking = false;
+    private static boolean ended = false;
 
     public Main() {
         int inits[][] = new int[6][7];
@@ -26,6 +30,17 @@ public class Main extends JPanel implements ActionListener, KeyListener {
                 inits[a][b] = 0;;
             }
         }
+
+        thinkingLabel = new JLabel("Thinking...");
+        thinkingLabel.setFont(new Font(thinkingLabel.getFont().getFontName(), Font.BOLD, 20));
+        setLayout(null);
+        add(thinkingLabel);
+        Insets insets = getInsets();
+        Dimension size = thinkingLabel.getPreferredSize();
+        thinkingLabel.setBounds(350 + insets.left, 5 + insets.top,
+                size.width, size.height);
+        thinkingLabel.setForeground(new Color(183,73, 73));
+        thinkingLabel.setVisible(false);
 
         if(gameMode == 0 && playerMode == 0)
             inits[5][3] = 1;
@@ -103,6 +118,11 @@ public class Main extends JPanel implements ActionListener, KeyListener {
             if(gameMode == 0 && playerMode == 0)
                 inits[5][3] = 1;
             game = new GameState(inits, false);
+
+            thinking = false;
+            ended = false;
+            thinkingLabel.setVisible(false);
+
             timer.start();
         });
         menuItems[1].addActionListener(e -> JOptionPane.showMessageDialog(null, "Select a column using arrow keys and press enter to insert a new checker." +
@@ -156,13 +176,16 @@ public class Main extends JPanel implements ActionListener, KeyListener {
         frame.validate();
         mainPanel.requestFocusInWindow();
 
+        thinking = false;
+        ended = false;
+
         if(gameMode == 1) {
             menuItems[5].setEnabled(false);
             menuItems[6].setEnabled(false);
         } else {
             menuItems[5].setEnabled(true);
             menuItems[6].setEnabled(true);
-            
+
             playerMode = 0;
             depth = 6;
         }
@@ -216,15 +239,21 @@ public class Main extends JPanel implements ActionListener, KeyListener {
     public void keyPressed(KeyEvent e) {}
     public void keyReleased(KeyEvent e) {
         if (e.getKeyCode() == e.VK_LEFT) {
+            if(thinking || ended)
+                return;
             if (x > 90) {
                 x -= 90;
             }
         }
         if (e.getKeyCode() == e.VK_RIGHT) {
+            if(thinking || ended)
+                return;
             if (x < 630)
                 x += 90;
         }
         if (e.getKeyCode() == e.VK_ENTER) {
+            if(thinking || ended)
+                return;
             if (game.maxPlayer == false || gameMode == 1) {
                 int allowed = game.addDisc((x / 90) - 1);
                 if(allowed == -1)
@@ -235,33 +264,56 @@ public class Main extends JPanel implements ActionListener, KeyListener {
 
                 if(comp.winCheck(game) == 2) {
                     JOptionPane.showMessageDialog(null, "Red Wins!!");
+                    ended = true;
                     timer.stop();
                     return;
                 } else if(comp.boardFilled(game)) {
                     JOptionPane.showMessageDialog(null, "It's a Draw!!");
+                    ended = true;
                     timer.stop();
                     return;
                 }
 
                 if(gameMode == 0) {
-                    int[] bestMove = comp.minimax(game, depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
-                    System.out.println(bestMove[0] + " " + bestMove[1]);
-                    game.addDisc(bestMove[1]);
+                    thinking = true;
+                    thinkingLabel.setVisible(true);
+                    SwingWorker sw1 = new SwingWorker()
+                    {
 
-                    if (comp.winCheck(game) == 1) {
-                        JOptionPane.showMessageDialog(null, "Blue Wins!!");
-                        timer.stop();
-                    } else if (comp.boardFilled(game)) {
-                        JOptionPane.showMessageDialog(null, "It's a Draw!!");
-                        timer.stop();
-                        return;
-                    }
+                        @Override
+                        protected String doInBackground() throws Exception
+                        {
+                            int[] bestMove = comp.minimax(game, depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
+                            game.addDisc(bestMove[1]);
+                            thinkingLabel.setVisible(false);
+                            thinking = false;
+
+                            if (comp.winCheck(game) == 1) {
+                                JOptionPane.showMessageDialog(null, "Blue Wins!!");
+                                ended = true;
+                                timer.stop();
+
+                            } else if (comp.boardFilled(game)) {
+                                JOptionPane.showMessageDialog(null, "It's a Draw!!");
+                                ended = true;
+                                timer.stop();
+                            }
+                            String res = "Finished Execution";
+                            return res;
+                        }
+
+                        @Override
+                        protected void done() {}
+                    };
+                    sw1.execute();
                 } else {
                     if (comp.winCheck(game) == 1) {
                         JOptionPane.showMessageDialog(null, "Blue Wins!!");
+                        ended = true;
                         timer.stop();
                     } else if (comp.boardFilled(game)) {
                         JOptionPane.showMessageDialog(null, "It's a Draw!!");
+                        ended = true;
                         timer.stop();
                         return;
                     }
