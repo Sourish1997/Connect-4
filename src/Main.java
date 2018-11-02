@@ -1,7 +1,6 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.border.Border;
 
 public class Main extends JPanel implements ActionListener, KeyListener {
     static GameState game;
@@ -17,6 +16,7 @@ public class Main extends JPanel implements ActionListener, KeyListener {
     private static Timer mainTimer;
 
     private static int gameMode = 0;
+    private static int playerMode = 0;
 
     public Main() {
         int inits[][] = new int[6][7];
@@ -26,7 +26,7 @@ public class Main extends JPanel implements ActionListener, KeyListener {
             }
         }
 
-        if(gameMode == 0)
+        if(gameMode == 0 && playerMode == 0)
             inits[5][3] = 1;
         game = new GameState(inits, false);
         addKeyListener(this);
@@ -65,15 +65,18 @@ public class Main extends JPanel implements ActionListener, KeyListener {
 
     public static void init() {
         menuBar = new JMenuBar();
-        menus = new JMenu[2];
-        menuItems = new JMenuItem[5];
+        menus = new JMenu[3];
+        menuItems = new JMenuItem[7];
         menus[0] = new JMenu("        File        ");
         menus[1] = new JMenu("        Help        ");
+        menus[2] = new JMenu("        Settings        ");
         menuItems[0] = new JMenuItem("        New Game       ");
         menuItems[1] = new JMenuItem("        How to Play        ");
         menuItems[2] = new JMenuItem("        About       ");
         menuItems[3] = new JMenuItem("        Exit       ");
         menuItems[4] = new JMenuItem("        Home        ");
+        menuItems[5] = new JMenuItem("        Player Settings        ");
+        menuItems[6] = new JMenuItem("        Computer Level        ");
         menus[0].add(menuItems[4]);
         menus[0].add(new JSeparator());
         menus[0].add(menuItems[0]);
@@ -82,17 +85,22 @@ public class Main extends JPanel implements ActionListener, KeyListener {
         menus[1].add(menuItems[1]);
         menus[1].add(new JSeparator());
         menus[1].add(menuItems[2]);
+        menus[2].add(menuItems[5]);
+        menus[2].add(new JSeparator());
+        menus[2].add(menuItems[6]);
         menuBar.add(menus[0]);
+        menuBar.add(menus[2]);
         menuBar.add(menus[1]);
         menuItems[0].addActionListener(e -> {
             timer.stop();
             int inits[][] = new int[6][7];
             for (int a = 0; a < 6; a++) {
                 for (int b = 0; b < 7; b++) {
-                    inits[a][b] = 0;;
+                    inits[a][b] = 0;
                 }
             }
-            inits[5][3] = 1;
+            if(gameMode == 0 && playerMode == 0)
+                inits[5][3] = 1;
             game = new GameState(inits, false);
             timer.start();
         });
@@ -101,6 +109,25 @@ public class Main extends JPanel implements ActionListener, KeyListener {
         menuItems[2].addActionListener(e -> JOptionPane.showMessageDialog(null, "© Created by Sourish Banerjee"));
         menuItems[3].addActionListener(e -> System.exit(0));
         menuItems[4].addActionListener(e -> addSplashPanel());
+        menuItems[5].addActionListener(e -> {
+            Object[] possibilities = {"Computer Plays First", "User Plays First"};
+            String selection = (String)JOptionPane.showInputDialog(
+                    null,
+                    "Make a Selection",
+                    "Who Plays First?",
+                    JOptionPane.QUESTION_MESSAGE,
+                    new ImageIcon("./images/select.png"),
+                    possibilities,
+                    "Computer Plays First");
+
+            //If a string was returned, say so.
+            if ((selection != null) && (selection.length() > 0)) {
+                if(selection.equals("Computer Plays First"))
+                    playerMode = 0;
+                else
+                    playerMode = 1;
+            }
+        });
     }
 
     public static void addMainPanel() {
